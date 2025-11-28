@@ -2,31 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>UD GAMES — Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UD GAMES</title>
   <link rel="stylesheet" href="style.css" />
+  <script defer src="router.js"></script>
+  <script defer src="src/components/searchbar.js"></script>
 </head>
 <body>
+  <header class="wiki-header">
+    <div class="header-inner">
+      <div class="logo">UD GAMES</div>
 
-  <!-- Navbar -->
-  <div class="navbar">
-    <strong>UD GAMES</strong>
-    <div>
-      <a href="#home">Home</a>
-      <a href="#docs">Docs</a>
-      <a href="#forum">Forum</a>
-      <a href="#game">Game</a>
-      <a href="#gameupdate">Updates</a>
-      <a href="#hire">Hire Us</a>
-      <a href="#toggle">Theme</a>
+      <div class="search-wrapper">
+        <input type="text" id="searchInput" placeholder="Search the studio..." />
+        <div id="searchResults" class="search-results"></div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#home">Home</a>
+        <a href="#docs">Docs</a>
+        <a href="#forum">Forum</a>
+        <a href="#game">Game</a>
+        <a href="#gameupdate">Updates</a>
+        <a href="#hire">Hire</a>
+        <a href="#toggle">Toggle</a>
+      </nav>
     </div>
-  </div>
+  </header>
 
-  <!-- Page Output -->
-  <div id="app"></div>
-
-  <!-- Components & Router -->
-  <script src="src/components/searchbar.js"></script>
-  <script src="src/router.js"></script>
-
+  <main id="app"></main>
 </body>
 </html>
