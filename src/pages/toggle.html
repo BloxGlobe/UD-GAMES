@@ -1,0 +1,21 @@
+<div class="content fade-in">
+  <h1>Theme Toggle</h1>
+  <button class="btn" onclick="toggleTheme()">Toggle Light / Dark</button>
+</div>
+
+<script>
+function toggleTheme() {
+  const isDark = document.body.classList.toggle("light-mode");
+
+  if (isDark) {
+    localStorage.setItem("theme", "light");
+  } else {
+    localStorage.setItem("theme", "dark");
+  }
+}
+
+// Load saved theme
+if (localStorage.getItem("theme") === "light") {
+  document.body.classList.add("light-mode");
+}
+</script>
