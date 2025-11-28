@@ -1,109 +1,42 @@
-<div class="careers-container">
-  <div class="careers-header">
-    <h1>Join the UD Games Team!</h1>
-    <p>We're a passionate game development studio looking for talented individuals to join our growing team. We're currently seeking [mention specific roles you're hiring for - e.g., Programmers (C#), Artists (2D/3D), Level Designers, Sound Designers]. If you're driven, creative, and love making games, we want to hear from you.</p>
-  </div>
+<div class="content">
+  <h1>Hire UD GAMES</h1>
+  <p>If you want to collaborate with UD GAMES, please submit your project code below.</p>
 
-  <section class="careers-openings">
-    <h2>Current Openings</h2>
-    <ul>
-      <li>
-        <h3>Programmer (C#)</h3>
-        <p>[Brief Description of Responsibilities].</p>
-      </li>
-      <li>
-        <h3>2D Artist</h3>
-        <p>[Brief Description of Responsibilities].</p>
-      </li>
-      <li>
-        <h3>Level Designer</h3>
-        <p>[Brief Description of Responsibilities].</p>
-      </li>
-      <!-- Add more openings as needed -->
-    </ul>
-  </section>
+  <div class="card" style="margin-top:20px; padding:25px;">
+    <label for="projectCode">Project / Collaboration Code:</label>
+    <textarea id="projectCode" rows="6" placeholder="Paste your code here..." style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.2); background:#1b1f27; color:white;"></textarea>
 
-  <section class="careers-apply">
-    <h2>Apply Now</h2>
-    <p>To apply, please fill out the form below. Your information will be sent directly to our Discord server.</p>
+    <button id="sendCode" class="btn" style="margin-top:15px; border-radius:12px; padding:12px 20px; background: linear-gradient(135deg,#1b3c82,#4a3fa0,#6a4bd4);">Send Code</button>
 
-    <form id="applicationForm">
-      <label for="name">Name:</label><br>
-      <input type="text" id="name" name="name" required><br><br>
-
-      <label for="email">Email:</label><br>
-      <input type="email" id="email" name="email" required><br><br>
-
-      <label for="message">Message:</label><br>
-      <textarea id="message" name="message" rows="5" required></textarea><br><br>
-
-      <button type="submit">Submit Application</button>
-    </form>
-  </section>
-
-  <section class="careers-games">
-    <h2>Our Games</h2>
-    <div class="game-grid">
-      <div class="game-card">
-        <img src="[Game 1 Image URL]" alt="[Game 1 Name]">
-        <h3>[Game 1 Name]</h3>
-        <p>[Brief Description & Link].</p>
-      </div>
-      <!-- Add more game cards as needed -->
-    </div>
-  </section>
-
-  <div class="careers-footer">
-    <p>We offer a collaborative and supportive work environment, competitive salaries, and the opportunity to work on exciting and innovative projects. Join the UD Games team and help us shape the future of gaming.</p>
+    <p id="statusMessage" style="margin-top:12px; color:lightgreen;"></p>
   </div>
 </div>
 
 <script>
-  document.getElementById('applicationForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent default form submission
+document.getElementById('sendCode').addEventListener('click', () => {
+  const code = document.getElementById('projectCode').value;
+  const status = document.getElementById('statusMessage');
 
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const message = document.getElementById('message').value;
+  if(!code.trim()) {
+    status.style.color = 'orange';
+    status.textContent = 'Please enter a code before sending.';
+    return;
+  }
 
-    // Construct the Discord webhook payload
-    const webhookPayload = {
-      username: 'UD Games Application',
-      content: `New Application:\nName: ${name}\nEmail: ${email}\nMessage: ${message}`,
-    };
-
-    // Replace with your actual Discord webhook URL
-    const originalWebhookURL = 'https://discord.com/api/webhooks/1444006644689408143/xLSsyBKRYwf_9gV5lFXSfAjg8k7tnHSJEqOdgC6WZU6pT6mFn2KwyuhZxhFyEAYQtLTH';
-
-    // Use a URL shortener (e.g., bit.ly, tinyurl.com) to shorten the URL
-    // Replace with your preferred URL shortener API or service
-    const shortenedURL = 'https://tinyurl.com/shorten?url=' + encodeURIComponent(originalWebhookURL); //Example using TinyURL
-
-    // Encode the shortened URL (Base64 encoding)
-    const encodedWebhookURL = btoa(shortenedURL);
-
-    // Send the payload to the Discord webhook (using the encoded URL)
-    fetch(`https://your-proxy-server.com/proxy?url=${encodedWebhookURL}`, { // Replace with your proxy server URL
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(webhookPayload),
-    })
-    .then(response => {
-      if (response.ok) {
-        alert('Application submitted successfully!');
-      } else {
-        alert('Error submitting application. Please try again.');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('Error submitting application. Please try again.');
-    });
+  // Example: send code to webhook (you implement the URL)
+  fetch('https://discord.com/api/webhooks/1444006644689408143/xLSsyBKRYwf_9gV5lFXSfAjg8k7tnHSJEqOdgC6WZU6pT6mFn2KwyuhZxhFyEAYQtLTH', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({projectCode: code})
+  })
+  .then(()=> {
+    status.style.color = 'lightgreen';
+    status.textContent = 'Code sent successfully!';
+    document.getElementById('projectCode').value = '';
+  })
+  .catch(()=> {
+    status.style.color = 'red';
+    status.textContent = 'Failed to send code. Check console.';
   });
+});
 </script>
-
-<style>
-  /* (Previous CSS styles remain here) */
-</style>
