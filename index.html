@@ -19,7 +19,14 @@
 <body>
   <!-- TOP NAV -->
   <nav class="navbar">
-    <img src="src/assets/images/UD-GAMES.png" class="logo" />
+    <img src="src/assets/images/UDGAMES.png" class="logo" alt="UDGAMES logo" />
+
+    <!-- center: page name + short subtitle (updates via JS) -->
+    <div class="nav-center" aria-hidden="true">
+      <div class="page-name" id="nav-page-name">UDGAMES</div>
+      <div class="page-sub" id="nav-page-sub">Your development hub</div>
+    </div>
+
     <div id="top-search"></div>
   </nav>
 
@@ -27,7 +34,7 @@
   <div class="site-grid">
 
     <!-- SIDEBAR -->
-    <aside class="sidebar">
+    <aside class="sidebar" role="navigation" aria-label="Main navigation">
       <h3>Navigation</h3>
       <a href="#home" data-route="home">Home</a>
       <a href="#docs" data-route="docs">Docs</a>
@@ -39,13 +46,40 @@
     </aside>
 
     <!-- MAIN CONTENT -->
-    <main class="main">
+    <main class="main" role="main">
       <div id="app"></div>
     </main>
 
     <!-- RIGHT SIDE PANEL -->
-    <aside class="rightcol"></aside>
+    <aside class="rightcol" aria-label="Right column / utilities"></aside>
   </div>
 
+  <!-- small inline script to update nav-center based on route -->
+  <script>
+    const PAGE_META = {
+      home: { title: "Home", sub: "Welcome to UDGAMES Studio" },
+      docs: { title: "Docs", sub: "Guides, API reference and standards" },
+      forum: { title: "Forum", sub: "Community & discussion" },
+      game: { title: "Game", sub: "Game overview and details" },
+      gameupdate: { title: "Updates", sub: "Changelog & patch notes" },
+      hire: { title: "Hire", sub: "Open positions & applications" },
+      toggle: { title: "Toggle", sub: "Experimental flags & settings" }
+    };
+
+    function updateNavCenter() {
+      const hash = location.hash.replace('#','') || 'home';
+      const meta = PAGE_META[hash] || { title: "UDGAMES", sub: "Your development hub" };
+      document.getElementById('nav-page-name').textContent = meta.title;
+      document.getElementById('nav-page-sub').textContent = meta.sub;
+
+      // update active class for sidebar links too (extra safety)
+      document.querySelectorAll('.sidebar a').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('data-route') === hash);
+      });
+    }
+
+    window.addEventListener('hashchange', updateNavCenter, {passive:true});
+    window.addEventListener('load', updateNavCenter, {passive:true});
+  </script>
 </body>
 </html>
