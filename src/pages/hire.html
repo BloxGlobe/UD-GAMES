@@ -1,8 +1,8 @@
-<!-- src/pages/hire.html -->
+<!-- src/pages/hire.html code -->
 <div class="card-box">
   <h1 style="color:white; margin:0 0 14px 0;">Work With UD Games</h1>
   <p style="opacity:0.75; margin-bottom:20px;">
-    Want to work with us? Submit your application below. We read every valid message.
+    Want to work with us? Submit your application below. We read every message sent via form.
   </p>
 
   <form id="hireForm" class="hire-form">
@@ -36,11 +36,11 @@
 
 <script>
 /*
-  🔥 AUTO INSULT FILTER SYSTEM
-  - Downloads insult list from insult.wiki ONCE
-  - Stores it in localStorage
-  - Uses it to filter messages
-  - No backend needed
+  🔥user filter system 
+  - Fetches insult list from external site & store it in a local storage
+  - Compares user message against list
+  - Uses the list to block inappropriate messages & show error
+  - Simple but effective :D
 */
 
 async function loadInsults() {
@@ -65,10 +65,8 @@ async function loadInsults() {
 let insultList = [];
 loadInsults().then(list => insultList = list);
 
+// Form submission handler
 
-// ----------------------
-// FORM HANDLING
-// ----------------------
 document.getElementById("hireForm").addEventListener("submit", e => {
   e.preventDefault();
 
