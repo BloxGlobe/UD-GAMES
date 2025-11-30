@@ -7,15 +7,12 @@
 
   <form id="hireForm" class="hire-form">
 
-    <!-- Name -->
     <label class="hire-label">Your Name</label>
     <input id="nameInput" class="hire-input" type="text" placeholder="Enter your name" />
 
-    <!-- Roblox Username -->
     <label class="hire-label">Roblox Username</label>
     <input id="robloxInput" class="hire-input" type="text" placeholder="Your Roblox @username" />
 
-    <!-- Position -->
     <label class="hire-label">Position Interested In</label>
     <select id="roleInput" class="hire-input">
       <option value="">Choose a role</option>
@@ -27,21 +24,18 @@
       <option>Commissions / Other</option>
     </select>
 
-    <!-- Message -->
     <label class="hire-label">Application Message</label>
     <textarea id="msgInput" class="hire-input" rows="6"
       placeholder="Tell us about yourself, your experience, and why you want to join."></textarea>
 
-    <!-- Error box -->
     <p id="hireError" style="color:#ff6868; font-size:14px; display:none;"></p>
 
-    <!-- Submit -->
     <button type="submit" class="hire-btn">Send Application</button>
   </form>
 </div>
 
 <script>
-// Basic anti-spam filters (client-side)
+// Basic anti-spam filters
 const forbiddenWords = [
   "fuck","sex","porn","dox","stupid","scam",
   "hire me pls","idk","nothing","???","spam"
@@ -56,30 +50,31 @@ document.getElementById("hireForm").addEventListener("submit", e => {
   const msg = document.getElementById("msgInput").value.trim();
   const error = document.getElementById("hireError");
 
-  // FILTERS
+  // VALIDATION
   if (name.length < 2) return showError("Name is too short.");
   if (roblox.length < 2) return showError("Enter your Roblox username.");
   if (!role) return showError("Please select a role.");
   if (msg.length < 30) return showError("Message too short — write at least 30 characters.");
 
-  // Forbidden keywords
+  // FORBIDDEN WORDS
   const lower = msg.toLowerCase();
   for (const bad of forbiddenWords) {
-    if (lower.includes(bad)) {
-      return showError("Your message contains blocked content.");
-    }
+    if (lower.includes(bad)) return showError("Your message contains blocked content.");
   }
 
-  // If passed, send through email
-  const mailBody =
+  // If everything is valid, show success popup
+  alert("🎉 Application sent! We’ll review it soon.");
+
+  // Prepare mailto body
+  const body =
     "Name: " + name +
     "%0D%0ARoblox: " + roblox +
     "%0D%0ARole: " + role +
     "%0D%0A%0D%0AMessage:%0D%0A" + msg;
 
+  // Open user email app
   window.location.href =
-    "mailto:UDGAMES@proton.me?subject=New Application from " + encodeURIComponent(name) +
-    "&body=" + mailBody;
+    "mailto:UDGAMES@proton.me?subject=New UD Games Application&body=" + body;
 });
 
 function showError(text) {
@@ -90,11 +85,7 @@ function showError(text) {
 </script>
 
 <style>
-.hire-form {
-  display:flex;
-  flex-direction:column;
-  gap:16px;
-}
+.hire-form { display:flex; flex-direction:column; gap:16px; }
 
 .hire-label {
   color:white;
