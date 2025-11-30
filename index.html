@@ -2,62 +2,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>UDGAMES Dashboard</title>
-<link rel="stylesheet" href="style.css" />
-<script defer src="src/components/searchbar.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UDGAMES Dashboard</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Components -->
+  <script defer src="src/components/searchbar.js"></script>
+  <script defer src="src/components/scrollbar.js"></script>
+
+  <!-- Hash Router -->
+  <script defer src="src/router.js"></script>
 </head>
+
 <body>
-<nav class="navbar">
-  <img src="src/assets/images/UD-GAMES.png" class="logo" />
-  <div id="top-search"></div>
-</nav>
+  <!-- TOP NAV -->
+  <nav class="navbar">
+    <img src="src/assets/images/UDGAMES.png" class="logo" />
+    <div id="top-search"></div>
+  </nav>
 
-<div class="site-grid">
-  <aside class="sidebar">
-    <h3>Navigation</h3>
-    <a href="#home">Home</a>
-    <a href="#docs">Docs</a>
-    <a href="#forum">Forum</a>
-    <a href="#game">Game</a>
-    <a href="#gameupdate">Updates</a>
-    <a href="#hire">Hire</a>
-    <a href="#toggle">Toggle</a>
-  </aside>
+  <!-- GRID LAYOUT -->
+  <div class="site-grid">
 
-  <main class="main">
-    <div id="app"></div>
-  </main>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <h3>Navigation</h3>
+      <a href="#home" data-route="home">Home</a>
+      <a href="#docs" data-route="docs">Docs</a>
+      <a href="#forum" data-route="forum">Forum</a>
+      <a href="#game" data-route="game">Game</a>
+      <a href="#gameupdate" data-route="gameupdate">Updates</a>
+      <a href="#hire" data-route="hire">Hire</a>
+      <a href="#toggle" data-route="toggle">Toggle</a>
+    </aside>
 
-  <aside class="rightcol"></aside>
-</div>
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <div id="app"></div>
+    </main>
 
-<div id="app"></div>
+    <!-- RIGHT SIDE PANEL -->
+    <aside class="rightcol"></aside>
+  </div>
 
-
-<script>
-const routes = {
-home: "src/pages/home.html",
-docs: "src/pages/docs.html",
-forum: "src/pages/forum.html",
-game: "src/pages/game.html",
-gameupdate: "src/pages/gameupdate.html",
-hire: "src/pages/hire.html",
-toggle: "src/pages/toggle.html",
-};
-
-
-async function loadPage() {
-const hash = location.hash.replace('#', '') || 'home';
-const page = routes[hash] || routes.home;
-const html = await fetch(page).then(r => r.text());
-document.getElementById('app').innerHTML = html;
-}
-
-
-window.addEventListener('hashchange', loadPage);
-window.addEventListener('load', loadPage);
-</script>
 </body>
 </html>

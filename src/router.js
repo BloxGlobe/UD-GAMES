@@ -1,3 +1,4 @@
+// src/router.js
 const routes = {
   home: "src/pages/home.html",
   docs: "src/pages/docs.html",
@@ -8,9 +9,17 @@ const routes = {
   toggle: "src/pages/toggle.html"
 };
 
+function setActiveLink(hash) {
+  document.querySelectorAll(".sidebar a").forEach(a => {
+    a.classList.toggle("active", a.getAttribute("data-route") === hash);
+  });
+}
+
 function loadPage() {
   const hash = location.hash.replace("#", "") || "home";
   const file = routes[hash] || routes["home"];
+
+  setActiveLink(hash);
 
   fetch(file)
     .then(res => res.text())
