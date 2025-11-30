@@ -1,1 +1,135 @@
-<div class="card"><h1>Hire</h1><p>Developer hiring page.</p></div>
+<!-- src/pages/hire.html -->
+<div class="card-box">
+  <h1 style="color:white; margin:0 0 14px 0;">Work With UD Games</h1>
+  <p style="opacity:0.75; margin-bottom:20px;">
+    Want to work with us? Submit your application below. We read every valid message.
+  </p>
+
+  <form id="hireForm" class="hire-form">
+
+    <!-- Name -->
+    <label class="hire-label">Your Name</label>
+    <input id="nameInput" class="hire-input" type="text" placeholder="Enter your name" />
+
+    <!-- Roblox Username -->
+    <label class="hire-label">Roblox Username</label>
+    <input id="robloxInput" class="hire-input" type="text" placeholder="Your Roblox @username" />
+
+    <!-- Position -->
+    <label class="hire-label">Position Interested In</label>
+    <select id="roleInput" class="hire-input">
+      <option value="">Choose a role</option>
+      <option>Builder</option>
+      <option>Modeler</option>
+      <option>UI Designer</option>
+      <option>Scripter</option>
+      <option>Animator</option>
+      <option>Commissions / Other</option>
+    </select>
+
+    <!-- Message -->
+    <label class="hire-label">Application Message</label>
+    <textarea id="msgInput" class="hire-input" rows="6"
+      placeholder="Tell us about yourself, your experience, and why you want to join."></textarea>
+
+    <!-- Error box -->
+    <p id="hireError" style="color:#ff6868; font-size:14px; display:none;"></p>
+
+    <!-- Submit -->
+    <button type="submit" class="hire-btn">Send Application</button>
+  </form>
+</div>
+
+<script>
+// Basic anti-spam filters (client-side)
+const forbiddenWords = [
+  "fuck","sex","porn","dox","stupid","scam",
+  "hire me pls","idk","nothing","???","spam"
+];
+
+document.getElementById("hireForm").addEventListener("submit", e => {
+  e.preventDefault();
+
+  const name = document.getElementById("nameInput").value.trim();
+  const roblox = document.getElementById("robloxInput").value.trim();
+  const role = document.getElementById("roleInput").value;
+  const msg = document.getElementById("msgInput").value.trim();
+  const error = document.getElementById("hireError");
+
+  // FILTERS
+  if (name.length < 2) return showError("Name is too short.");
+  if (roblox.length < 2) return showError("Enter your Roblox username.");
+  if (!role) return showError("Please select a role.");
+  if (msg.length < 30) return showError("Message too short — write at least 30 characters.");
+
+  // Forbidden keywords
+  const lower = msg.toLowerCase();
+  for (const bad of forbiddenWords) {
+    if (lower.includes(bad)) {
+      return showError("Your message contains blocked content.");
+    }
+  }
+
+  // If passed, send through email
+  const mailBody =
+    "Name: " + name +
+    "%0D%0ARoblox: " + roblox +
+    "%0D%0ARole: " + role +
+    "%0D%0A%0D%0AMessage:%0D%0A" + msg;
+
+  window.location.href =
+    "mailto:UDGAMES@proton.me?subject=New Application from " + encodeURIComponent(name) +
+    "&body=" + mailBody;
+});
+
+function showError(text) {
+  const e = document.getElementById("hireError");
+  e.innerText = text;
+  e.style.display = "block";
+}
+</script>
+
+<style>
+.hire-form {
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.hire-label {
+  color:white;
+  font-size:14px;
+  font-weight:600;
+}
+
+.hire-input {
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.04);
+  color:white;
+  font-size:14px;
+}
+
+.hire-input:focus {
+  outline:none;
+  border-color:var(--accent);
+  background:rgba(255,255,255,0.06);
+}
+
+.hire-btn {
+  padding:12px;
+  background:var(--accent);
+  color:#000;
+  border:none;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.hire-btn:hover {
+  background:#95d3ff;
+}
+</style>
