@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UD Games Studio</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="assets/logo.png">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <img src="assets/logo.png" alt="UD Games Studio Logo">
+      <h1>UD Games Studio</h1>
+    </div>
+    <nav class="nav">
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Games</a></li>
+        <li><a href="#">Portfolio</a></li>
+        <li><a href="#">Docs & FAQ</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <h2>Welcome to UD Games Studio</h2>
+    <p>Discover, create, and explore games made by our talented team.</p>
+    <a href="#" class="btn">Explore Games</a>
+  </section>
+
+  <!-- Featured Games -->
+  <section class="featured">
+    <h2>Featured Games</h2>
+    <div class="game-grid">
+      <div class="game-card">
+        <img src="assets/game1.png" alt="Game 1">
+        <h3>Game One</h3>
+        <p>Exciting adventure game full of challenges.</p>
+      </div>
+      <div class="game-card">
+        <img src="assets/game2.png" alt="Game 2">
+        <h3>Game Two</h3>
+        <p>Fast-paced action with friends online.</p>
+      </div>
+      <div class="game-card">
+        <img src="assets/game3.png" alt="Game 3">
+        <h3>Game Three</h3>
+        <p>Puzzle and strategy combined for endless fun.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Docs & FAQ -->
+  <section class="faq">
+    <h2>Docs & FAQ</h2>
+    <div class="searchbar">
+      <input type="text" placeholder="Search the Docs & FAQ...">
+      <button>Search</button>
+    </div>
+    <ul class="faq-list">
+      <li>How to join UD Games Studio?</li>
+      <li>How to submit your game?</li>
+      <li>How to report a bug?</li>
+    </ul>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2025 UD Games Studio. All rights reserved.</p>
+  </footer>
+</body>
+</html>
