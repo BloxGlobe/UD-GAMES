@@ -1,1 +1,31 @@
-<div class="card"><h1>Toggle Settings</h1><p>Settings and toggles.</p></div>
+<div class="card-box">
+  <h2 style="color: #fff; margin-bottom: 12px;">Theme Settings</h2>
+  <p style="opacity: .7; margin-bottom: 22px;">
+    Switch between dark mode and light mode for your dashboard.
+  </p>
+
+  <div class="theme-toggle-container">
+    <span class="toggle-label">Dark / Light Mode</span>
+
+    <label class="switch">
+      <input type="checkbox" id="themeToggle" />
+      <span class="slider"></span>
+    </label>
+  </div>
+</div>
+
+<script>
+  // Load saved theme
+  const savedTheme = localStorage.getItem("udgames-theme") || "dark";
+  document.documentElement.setAttribute("data-theme", savedTheme);
+
+  const checkbox = document.getElementById("themeToggle");
+  checkbox.checked = savedTheme === "light";
+
+  // When switch changes
+  checkbox.addEventListener("change", () => {
+    const mode = checkbox.checked ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", mode);
+    localStorage.setItem("udgames-theme", mode);
+  });
+</script>
