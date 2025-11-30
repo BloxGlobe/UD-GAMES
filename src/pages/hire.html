@@ -35,12 +35,40 @@
 </div>
 
 <script>
-// Basic anti-spam filters
-const forbiddenWords = [
-  "fuck","sex","porn","dox","stupid","scam",
-  "hire me pls","idk","nothing","???","spam"
-];
+/*
+  🔥 AUTO INSULT FILTER SYSTEM
+  - Downloads insult list from insult.wiki ONCE
+  - Stores it in localStorage
+  - Uses it to filter messages
+  - No backend needed
+*/
 
+async function loadInsults() {
+  const cached = localStorage.getItem("insultList");
+  if (cached) return cached.split(",");
+
+  try {
+    const html = await fetch("https://www.insult.wiki/list-of-insults").then(r => r.text());
+    const temp = document.createElement("div");
+    temp.innerHTML = html;
+
+    // get all <li> items (the site uses <li> for insults)
+    const items = [...temp.querySelectorAll("li")].map(li => li.textContent.trim().toLowerCase());
+
+    localStorage.setItem("insultList", items.join(","));
+    return items;
+  } catch {
+    return []; // fail-safe
+  }
+}
+
+let insultList = [];
+loadInsults().then(list => insultList = list);
+
+
+// ----------------------
+// FORM HANDLING
+// ----------------------
 document.getElementById("hireForm").addEventListener("submit", e => {
   e.preventDefault();
 
@@ -50,29 +78,29 @@ document.getElementById("hireForm").addEventListener("submit", e => {
   const msg = document.getElementById("msgInput").value.trim();
   const error = document.getElementById("hireError");
 
-  // VALIDATION
   if (name.length < 2) return showError("Name is too short.");
   if (roblox.length < 2) return showError("Enter your Roblox username.");
   if (!role) return showError("Please select a role.");
-  if (msg.length < 30) return showError("Message too short — write at least 30 characters.");
+  if (msg.length < 30) return showError("Message is too short.");
 
-  // FORBIDDEN WORDS
   const lower = msg.toLowerCase();
-  for (const bad of forbiddenWords) {
-    if (lower.includes(bad)) return showError("Your message contains blocked content.");
+
+  // Check message against insult list
+  for (const word of insultList) {
+    if (word && lower.includes(word)) {
+      return showError("The sentence you wrote contains bad or inappropriate words.");
+    }
   }
 
-  // If everything is valid, show success popup
+  // everything is valid
   alert("🎉 Application sent! We’ll review it soon.");
 
-  // Prepare mailto body
-  const body =
+  const body = 
     "Name: " + name +
     "%0D%0ARoblox: " + roblox +
     "%0D%0ARole: " + role +
     "%0D%0A%0D%0AMessage:%0D%0A" + msg;
 
-  // Open user email app
   window.location.href =
     "mailto:UDGAMES@proton.me?subject=New UD Games Application&body=" + body;
 });
