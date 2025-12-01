@@ -1,31 +1,134 @@
+<!-- src/pages/toggle.html -->
 <div class="card-box">
   <h2 style="color: #fff; margin-bottom: 12px;">Theme Settings</h2>
   <p style="opacity: .7; margin-bottom: 22px;">
-    Switch between dark mode and light mode for your dashboard.
+    Control dashboard appearance below.
   </p>
 
+  <!-- DARK/LIGHT MODE TOGGLE -->
   <div class="theme-toggle-container">
     <span class="toggle-label">Dark / Light Mode</span>
 
     <label class="switch">
-      <input type="checkbox" id="themeToggle" />
+      <input type="checkbox" id="themeToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <!-- ANIMATION TOGGLE -->
+  <div class="theme-toggle-container" style="margin-top: 20px;">
+    <span class="toggle-label">UI Animations</span>
+
+    <label class="switch">
+      <input type="checkbox" id="animToggle">
       <span class="slider"></span>
     </label>
   </div>
 </div>
 
 <script>
-  // Load saved theme
-  const savedTheme = localStorage.getItem("udgames-theme") || "dark";
-  document.documentElement.setAttribute("data-theme", savedTheme);
+/*
+  Theme toggler (Dark/Light)
+  - Saves preference in local storage
+  - Applies on page load
+*/
+const savedTheme = localStorage.getItem("udgames-theme") || "dark";
+document.documentElement.setAttribute("data-theme", savedTheme);
 
-  const checkbox = document.getElementById("themeToggle");
-  checkbox.checked = savedTheme === "light";
+const themeToggle = document.getElementById("themeToggle");
+// If theme = light → checkbox=true
+themeToggle.checked = savedTheme === "light";
 
-  // When switch changes
-  checkbox.addEventListener("change", () => {
-    const mode = checkbox.checked ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", mode);
-    localStorage.setItem("udgames-theme", mode);
-  });
+themeToggle.addEventListener("change", () => {
+  const mode = themeToggle.checked ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", mode);
+  localStorage.setItem("udgames-theme", mode);
+});
+
+//Animation toggler (On/Off)
+
+const savedAnim = localStorage.getItem("udgames-animations") || "on";
+const animToggle = document.getElementById("animToggle");
+
+// Checkbox ON if animations enabled
+animToggle.checked = savedAnim === "on";
+
+function applyAnimationSetting(state) {
+  if (state === "off") {
+    document.documentElement.style.setProperty("--anim-speed", "0s");
+    document.documentElement.style.setProperty("--anim-opacity", "1");
+  } else {
+    document.documentElement.style.setProperty("--anim-speed", ".25s");
+    document.documentElement.style.setProperty("--anim-opacity", ".85");
+  }
+}
+
+applyAnimationSetting(savedAnim);
+
+animToggle.addEventListener("change", () => {
+  const state = animToggle.checked ? "on" : "off";
+  localStorage.setItem("udgames-animations", state);
+  applyAnimationSetting(state);
+});
 </script>
+
+<style>
+/* Toggle UI styling (switch) */
+.theme-toggle-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.toggle-label {
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.switch {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  display: inline-block;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #666;
+  border-radius: 28px;
+  transition: 0.3s;
+}
+
+.slider:before {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+input:checked + .slider {
+  background: var(--accent);
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* Animation variable defaults */
+:root {
+  --anim-speed: .25s;
+  --anim-opacity: .85;
+}
+</style>

@@ -1,29 +1,69 @@
-<div class="page page-home">
+<script>
+const GROUP_ID = 35398646;
 
-  <!-- Hero / Presentation -->
-  <section class="home-hero">
-    <h1>Welcome to UDGAMES Studio</h1>
-    <p>Your development hub for Roblox experiences.</p>
-  </section>
+const membersEl = document.getElementById("live-members");
+const onlineEl = document.getElementById("live-online");
+const memberListEl = document.getElementById("member-list");
 
-  <!-- Studio Info -->
-  <section class="studio-info card">
-    <h2>Studio Overview</h2>
+async function loadMemberCount() {
+  try {
+    const res = await fetch(`https://groups.roblox.com/v1/groups/${GROUP_ID}`);
+    const data = await res.json();
+    membersEl.textContent = data.memberCount.toLocaleString();
+  } catch {
+    membersEl.textContent = "Error";
+  }
+}
 
-    <div class="studio-details">
-      <div><strong>Group Name:</strong> UD GAMES Studio</div>
-      <div><strong>Created On:</strong> September 19, 2023</div>
-      <div><strong>Members:</strong> <span id="live-members">Loading…</span></div>
-      <div><strong>Online Now:</strong> <span id="live-online">Loading…</span></div>
-    </div>
-  </section>
+async function loadOnlineCount() {
+  try {
+    const res = await fetch(`https://groups.roblox.com/v1/groups/${GROUP_ID}/?includeMembers=true`);
+    const data = await res.json();
+    const online = data.members.filter(m => m.isOnline).length;
+    onlineEl.textContent = online.toLocaleString();
+  } catch {
+    onlineEl.textContent = "Error";
+  }
+}
 
-  <!-- Members Section -->
-  <section class="members-section card">
-    <h2>Studio Members</h2>
-    <div id="member-list" class="member-list">
-      Loading members…
-    </div>
-  </section>
+async function loadMembers() {
+  memberListEl.textContent = "Loading…";
 
-</div>
+  let cursor = "";
+  let all = [];
+
+  try {
+    while (cursor !== null) {
+      const res = await fetch(
+        `https://groups.roblox.com/v1/groups/${GROUP_ID}/users?cursor=${cursor}`
+      );
+      const data = await res.json();
+
+      all.push(...data.data);
+      cursor = data.nextPageCursor;
+    }
+
+    memberListEl.innerHTML = all
+      .map(
+        m => `
+        <div class="member-item">
+          <strong>${m.user.username}</strong> — 
+          <span>${m.role.name}</span>
+        </div>`
+      )
+      .join("");
+
+  } catch {
+    memberListEl.textContent = "Failed to load members.";
+  }
+}
+
+loadMemberCount();
+loadOnlineCount();
+loadMembers();
+
+setInterval(() => {
+  loadMemberCount();
+  loadOnlineCount();
+}, 30000);
+</script>
