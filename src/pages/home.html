@@ -1,69 +1,84 @@
+<div class="page page-home">
+
+  <section class="home-hero">
+    <h1>UDGAMES Studio</h1>
+    <p>Roblox development group</p>
+  </section>
+
+  <!-- Group Info -->
+  <section class="studio-info card">
+    <h2>Group Info</h2>
+
+    <div class="studio-details">
+      <div><strong>Group Name:</strong> UD GAMES Studio</div>
+      <div><strong>Created On:</strong> September 19, 2023</div>
+      <div><strong>Members:</strong> <span id="live-members">Loading…</span></div>
+      <div><strong>Online:</strong> <span id="live-online">Loading…</span></div>
+    </div>
+  </section>
+
+  <!-- Members -->
+  <section class="members-section card">
+    <h2>Members</h2>
+    <div id="member-list" class="member-list">
+      Loading members…
+    </div>
+  </section>
+
+</div>
+
 <script>
 const GROUP_ID = 35398646;
 
-const membersEl = document.getElementById("live-members");
-const onlineEl = document.getElementById("live-online");
-const memberListEl = document.getElementById("member-list");
-
-async function loadMemberCount() {
+// fetch group stats
+async function loadGroupStats() {
   try {
     const res = await fetch(`https://groups.roblox.com/v1/groups/${GROUP_ID}`);
     const data = await res.json();
-    membersEl.textContent = data.memberCount.toLocaleString();
-  } catch {
-    membersEl.textContent = "Error";
+
+    document.getElementById("live-members").textContent = data.memberCount ?? "N/A";
+    document.getElementById("live-online").textContent = data.publicEntryAllowed ? "Unknown" : "N/A";
+  } catch (err) {
+    console.error(err);
   }
 }
 
-async function loadOnlineCount() {
-  try {
-    const res = await fetch(`https://groups.roblox.com/v1/groups/${GROUP_ID}/?includeMembers=true`);
-    const data = await res.json();
-    const online = data.members.filter(m => m.isOnline).length;
-    onlineEl.textContent = online.toLocaleString();
-  } catch {
-    onlineEl.textContent = "Error";
-  }
-}
-
+// fetch members
 async function loadMembers() {
-  memberListEl.textContent = "Loading…";
-
-  let cursor = "";
-  let all = [];
+  const list = document.getElementById("member-list");
+  list.textContent = "Loading…";
 
   try {
-    while (cursor !== null) {
-      const res = await fetch(
-        `https://groups.roblox.com/v1/groups/${GROUP_ID}/users?cursor=${cursor}`
-      );
-      const data = await res.json();
+    const res = await fetch(
+      `https://groups.roblox.com/v1/groups/${GROUP_ID}/users?limit=100`
+    );
+    const data = await res.json();
 
-      all.push(...data.data);
-      cursor = data.nextPageCursor;
+    list.innerHTML = "";
+
+    for (const member of data.data) {
+      const userId = member.user.userId;
+      const username = member.user.username;
+
+      const avatar = `https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=100&height=100&format=png`;
+
+      const div = document.createElement("div");
+      div.className = "member-card";
+
+      div.innerHTML = `
+        <img src="${avatar}" alt="${username}" />
+        <div>${username}</div>
+      `;
+
+      list.appendChild(div);
     }
 
-    memberListEl.innerHTML = all
-      .map(
-        m => `
-        <div class="member-item">
-          <strong>${m.user.username}</strong> — 
-          <span>${m.role.name}</span>
-        </div>`
-      )
-      .join("");
-
-  } catch {
-    memberListEl.textContent = "Failed to load members.";
+  } catch (err) {
+    list.textContent = "Failed to load members.";
+    console.error(err);
   }
 }
 
-loadMemberCount();
-loadOnlineCount();
+loadGroupStats();
 loadMembers();
-
-setInterval(() => {
-  loadMemberCount();
-  loadOnlineCount();
-}, 30000);
 </script>

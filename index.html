@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,33 +7,27 @@
 
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Components -->
   <script defer src="src/components/searchbar.js"></script>
   <script defer src="src/components/scrollbar.js"></script>
-
-  <!-- Hash Router -->
   <script defer src="src/router.js"></script>
 </head>
 
 <body>
-  <!-- TOP NAV -->
+
   <nav class="navbar">
     <img src="src/assets/images/UD-GAMES.png" class="logo" alt="UDGAMES logo" />
 
-    <!-- center: page name + short subtitle (updates via JS) -->
     <div class="nav-center" aria-hidden="true">
       <div class="page-name" id="nav-page-name">UDGAMES</div>
-      <div class="page-sub" id="nav-page-sub">Your development hub</div>
+      <div class="page-sub" id="nav-page-sub">Development Dashboard</div>
     </div>
 
     <div id="top-search"></div>
   </nav>
 
-  <!-- GRID LAYOUT -->
   <div class="site-grid">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar" role="navigation" aria-label="Main navigation">
+    <aside class="sidebar" role="navigation">
       <h3>Navigation</h3>
       <a href="#home" data-route="home">Home</a>
       <a href="#docs" data-route="docs">Docs</a>
@@ -45,34 +38,32 @@
       <a href="#toggle" data-route="toggle">Toggle</a>
     </aside>
 
-    <!-- MAIN CONTENT -->
-    <main class="main" role="main">
+    <main class="main">
       <div id="app"></div>
     </main>
 
-    <!-- RIGHT SIDE PANEL -->
-    <aside class="rightcol" aria-label="Right column / utilities"></aside>
+    <!-- Team Members Panel -->
+    <aside class="rightcol" id="team-panel"></aside>
+
   </div>
 
-  <!-- small inline script to update nav-center based on route -->
   <script>
     const PAGE_META = {
-      home: { title: "Home", sub: "Welcome to UDGAMES Studio" },
-      docs: { title: "Docs", sub: "Guides, API reference and standards" },
-      forum: { title: "Forum", sub: "Community & discussion" },
-      game: { title: "Game", sub: "Game overview and details" },
-      gameupdate: { title: "Updates", sub: "Changelog & patch notes" },
-      hire: { title: "Hire", sub: "Open positions & applications" },
-      toggle: { title: "Toggle", sub: "Experimental flags & settings" }
+      home: { title: "Home", sub: "Welcome to UDGAMES" },
+      docs: { title: "Docs", sub: "Guides & Info" },
+      forum: { title: "Forum", sub: "Community" },
+      game: { title: "Game", sub: "Game Info" },
+      gameupdate: { title: "Updates", sub: "Recent Updates" },
+      hire: { title: "Hire", sub: "Work With Us" },
+      toggle: { title: "Toggle", sub: "Settings" }
     };
 
     function updateNavCenter() {
       const hash = location.hash.replace('#','') || 'home';
-      const meta = PAGE_META[hash] || { title: "UDGAMES", sub: "Your development hub" };
+      const meta = PAGE_META[hash] || { title: "UDGAMES", sub: "Dashboard" };
       document.getElementById('nav-page-name').textContent = meta.title;
       document.getElementById('nav-page-sub').textContent = meta.sub;
 
-      // update active class for sidebar links too (extra safety)
       document.querySelectorAll('.sidebar a').forEach(a => {
         a.classList.toggle('active', a.getAttribute('data-route') === hash);
       });
@@ -80,6 +71,47 @@
 
     window.addEventListener('hashchange', updateNavCenter, {passive:true});
     window.addEventListener('load', updateNavCenter, {passive:true});
+
+    // Load Team Members into Right Panel
+    async function loadTeamPanel() {
+      const GROUP_ID = 35398646;
+      const panel = document.getElementById("team-panel");
+      panel.innerHTML = "<h3>Team Members</h3><div class='team-list'>Loading…</div>";
+
+      try {
+        const res = await fetch(
+          `https://groups.roblox.com/v1/groups/${GROUP_ID}/users?limit=100`
+        );
+        const data = await res.json();
+
+        const listDiv = document.createElement("div");
+        listDiv.className = "team-list";
+
+        for (const member of data.data) {
+          const id = member.user.userId;
+          const username = member.user.username;
+          const img = `https://www.roblox.com/headshot-thumbnail/image?userId=${id}&width=100&height=100&format=png`;
+
+          const item = document.createElement("div");
+          item.className = "team-member";
+          item.innerHTML = `
+            <img src="${img}" alt="${username}">
+            <span>${username}</span>
+          `;
+          listDiv.appendChild(item);
+        }
+
+        panel.innerHTML = "<h3>Team Members</h3>";
+        panel.appendChild(listDiv);
+
+      } catch (e) {
+        panel.innerHTML = "<h3>Team Members</h3>Error loading members.";
+        console.error(e);
+      }
+    }
+
+    window.addEventListener("load", loadTeamPanel);
   </script>
+
 </body>
 </html>
