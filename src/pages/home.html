@@ -1,45 +1,11 @@
-<!-- src/pages/home.html -->
-<div class="page page-home">
-
-  <section class="home-hero card-box">
-    <h1>Welcome to UDGAMES Studio</h1>
-    <p>Your development hub for Roblox experiences.</p>
-  </section>
-
-  <section class="studio-info card-box">
-    <h2>Studio Overview</h2>
-
-    <div class="studio-details">
-      <div><strong>Group Name:</strong> <span id="group-name">UD GAMES Studio</span></div>
-      <div><strong>Created On:</strong> <span id="group-created">—</span></div>
-      <div><strong>Total Members:</strong> <span id="live-members">Loading…</span></div>
-      <div><strong>Online Now:</strong> <span id="live-online">Loading…</span></div>
-    </div>
-
-    <div id="home-status" style="margin-top:12px;color:var(--muted);font-size:13px">Loading members…</div>
-  </section>
-
-  <section class="members-section card-box">
-    <h2>Studio Members</h2>
-    <div id="member-list" class="member-list">
-      Loading members…
-    </div>
-  </section>
-
-</div>
-
 <script>
 /*
-  Home page group loader
-  - groupId: 35398646 (UD GAMES Studio)
-  - Uses Roblox web APIs to fetch roles, members and presence.
-  Notes:
-  - Roblox sometimes blocks direct browser requests (CORS). If you see
-    CORS errors in console or a user-visible error message below,
-    run a tiny proxy on your server (instructions printed below).
+  Group live loader (updated)
+  - Auto-refresh every 30 seconds
+  - No UI breaking
 */
 
-(async function () {
+(async function loadGroup(firstLoad = false) {
   const GROUP_ID = 35398646;
   const memberListEl = document.getElementById('member-list');
   const membersCountEl = document.getElementById('live-members');
@@ -53,200 +19,147 @@
     statusEl.style.color = isError ? '#ff8b8b' : 'var(--muted)';
   }
 
-  // helper: fetch JSON with try/catch and return null on failure
   async function safeFetch(url, opts) {
     try {
       const res = await fetch(url, opts);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();
-    } catch (err) {
-      // keep error for debugging
-      console.warn('Fetch failed', url, err);
+    } catch {
       return null;
     }
   }
 
-  // 1) fetch roles (gives roleId -> name, and group details)
-  setStatus('Loading group roles...');
-  const rolesUrl = `https://groups.roblox.com/v1/groups/${GROUP_ID}/roles`;
-  const rolesData = await safeFetch(rolesUrl);
-  if (!rolesData || !Array.isArray(rolesData.roles)) {
-    setStatus('Could not load group roles. This may be caused by CORS. See dev console.', true);
-    memberListEl.innerHTML = '<div style="color:#ff8b8b">Unable to load members (CORS or network error). Use a server proxy if needed.</div>';
+  if (firstLoad) setStatus("Loading group data...");
+
+  // GET roles + group info
+  const rolesData = await safeFetch(`https://groups.roblox.com/v1/groups/${GROUP_ID}/roles`);
+  if (!rolesData) {
+    setStatus("Failed to load group data (CORS or network).", true);
     return;
   }
 
-  // rolesData contains roles array, and may include created date and name in the root
   const roles = rolesData.roles;
-  // map roleId -> roleName & priority
   const roleMap = {};
   roles.forEach(r => roleMap[r.id] = { name: r.name, rank: r.rank });
 
-  // Set group name/created if present
-  if (rolesData.group && rolesData.group.name) groupNameEl.textContent = rolesData.group.name;
-  if (rolesData.group && rolesData.group.created) {
-    const created = new Date(rolesData.group.created);
-    groupCreatedEl.textContent = created.toLocaleDateString();
-  } else {
-    // if roles endpoint doesn't have created date, attempt group endpoint
-    const groupInfo = await safeFetch(`https://groups.roblox.com/v1/groups/${GROUP_ID}`);
-    if (groupInfo && groupInfo.created) {
-      groupCreatedEl.textContent = new Date(groupInfo.created).toLocaleDateString();
-    }
-  }
+  if (rolesData.group?.name) groupNameEl.textContent = rolesData.group.name;
+  if (rolesData.group?.created)
+    groupCreatedEl.textContent = new Date(rolesData.group.created).toLocaleDateString();
 
-  setStatus('Loading members (this can take a few seconds)...');
-
-  // 2) fetch members (paginate if needed) - we'll fetch first 200 members for dashboard
+  // FETCH last 200 members
   async function fetchMembers(limit = 200) {
-    const perPage = 100;
-    let fetched = [];
-    let cursor = null;
-    while (fetched.length < limit) {
+    let out = [], cursor = null;
+    while (out.length < limit) {
       const url = new URL(`https://groups.roblox.com/v1/groups/${GROUP_ID}/users`);
-      url.searchParams.set('limit', Math.min(perPage, limit - fetched.length));
-      if (cursor) url.searchParams.set('cursor', cursor);
+      url.searchParams.set("limit", 100);
+      if (cursor) url.searchParams.set("cursor", cursor);
+
       const data = await safeFetch(url.toString());
-      if (!data || !Array.isArray(data.data)) break;
-      fetched = fetched.concat(data.data);
-      if (!data.nextPageCursor) break;
+      if (!data?.data) break;
+
+      out = out.concat(data.data);
       cursor = data.nextPageCursor;
+      if (!cursor) break;
     }
-    return fetched;
+    return out;
   }
 
   const rawMembers = await fetchMembers(200);
-  if (!rawMembers || rawMembers.length === 0) {
-    setStatus('No members returned or failed to load members. See console for errors.', true);
-    memberListEl.innerHTML = '<div style="color:#ff8b8b">No members found or failed to load.</div>';
+  if (!rawMembers.length) {
+    setStatus("No members found.", true);
     return;
   }
 
+  // Show total members
   membersCountEl.textContent = rawMembers.length.toLocaleString();
 
-  // rawMembers items look like { user: {id, name}, role: {id, name, rank} } depending on API version
-  // Normalize to { id, name, roleId }
+  // Normalize member objects
   const members = rawMembers.map(m => {
     const user = m.user || m;
-    const role = m.role || (m.user && m.user.role);
+    const role = m.role;
     return {
-      id: (user && user.userId) || (user && user.id) || user.id || user.userId,
-      name: (user && (user.username || user.name || user.userName)) || user.username || user.name || user.userName,
-      roleId: (role && role.id) || (m.roleId) || null
+      id: user.id || user.userId,
+      name: user.username || user.name,
+      roleId: role?.id || m.roleId
     };
-  }).filter(Boolean);
-
-  // 3) presence: try modern multi-get presence endpoint
-  setStatus('Checking who is online...');
-  // batch userIds into chunks (presence API supports batching)
-  function chunkArray(arr, size){ const out=[]; for(let i=0;i<arr.length;i+=size) out.push(arr.slice(i,i+size)); return out; }
-  const userIds = members.map(m => m.id).filter(Boolean);
-  let presenceMap = {}; // userId -> isOnline boolean
-
-  // First try presence.roblox.com multi endpoint
-  // According to community docs: POST https://presence.roblox.com/v1/presence/users (with {userIds:[...]})
-  let triedPresenceMulti = false;
-  try {
-    const batches = chunkArray(userIds, 100);
-    for (const batch of batches) {
-      const res = await safeFetch('https://presence.roblox.com/v1/presence/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userIds: batch })
-      });
-      if (res && Array.isArray(res)) {
-        triedPresenceMulti = true;
-        res.forEach(p => {
-          // object fields vary; some endpoints return UserPresenceType or IsOnline
-          const uid = p.userId || p.UserId || p.userId;
-          const isOnline = ('isOnline' in p) ? p.isOnline : (('UserPresenceType' in p) ? (p.UserPresenceType !== 0) : false);
-          presenceMap[uid] = !!isOnline;
-        });
-      }
-    }
-  } catch (err) {
-    // ignore; fallback below
-    console.warn('presence multi error', err);
-  }
-
-  // Fallback: legacy api.roblox.com Users/{id}/OnlineStatus (single requests) — slower
-  if (!triedPresenceMulti || Object.keys(presenceMap).length === 0) {
-    setStatus('Using fallback presence checks (slower).');
-    for (const id of userIds) {
-      try {
-        const p = await safeFetch(`https://api.roblox.com/Users/${id}/Onlinestatus/`);
-        if (p && typeof p.IsOnline !== 'undefined') presenceMap[id] = !!p.IsOnline;
-      } catch (err) { /* ignore */ }
-    }
-  }
-
-  // Count online
-  const onlineCount = Object.values(presenceMap).filter(Boolean).length;
-  onlineCountEl.textContent = (onlineCount || 0).toLocaleString();
-
-  // 4) Render members grouped by role (sort by role rank if available)
-  const groups = {}; // roleName -> [members]
-  members.forEach(m => {
-    const r = roleMap[m.roleId] ? roleMap[m.roleId].name : (m.roleId ? `Role ${m.roleId}` : 'Member');
-    if (!groups[r]) groups[r] = [];
-    groups[r].push(Object.assign({}, m, { online: !!presenceMap[m.id] }));
   });
 
-  // Sort role groups by roleMap rank (if available) so owners appear first
-  const roleOrder = roles.slice().sort((a,b) => a.rank - b.rank).map(r => r.name);
-  // fallback: put 'Owner' first if exists
-  if (!roleOrder.length) roleOrder.push('Owner');
+  // PRESENCE CHECK
+  const userIds = members.map(m => m.id);
+  let presenceMap = {};
 
-  // Build HTML
-  memberListEl.innerHTML = '';
-  const orderedRoleNames = Array.from(new Set([...roleOrder, ...Object.keys(groups)]));
-
-  orderedRoleNames.forEach(roleName => {
-    if (!groups[roleName]) return;
-    const section = document.createElement('div');
-    section.style.marginBottom = '12px';
-    const heading = document.createElement('div');
-    heading.style.fontWeight = '700';
-    heading.style.color = '#eaf4ff';
-    heading.style.marginBottom = '6px';
-    heading.textContent = `${roleName} (${groups[roleName].length})`;
-    section.appendChild(heading);
-
-    groups[roleName].forEach(u => {
-      const item = document.createElement('div');
-      item.className = 'member-item';
-      item.style.display = 'flex';
-      item.style.justifyContent = 'space-between';
-      item.style.alignItems = 'center';
-      item.style.gap = '12px';
-
-      const left = document.createElement('div');
-      left.textContent = u.name || `User ${u.id}`;
-      const right = document.createElement('div');
-      right.textContent = u.online ? 'Online' : 'Offline';
-      right.style.opacity = '0.85';
-      right.style.fontSize = '13px';
-      right.style.fontWeight = '700';
-      right.style.color = u.online ? '#73bef8' : 'var(--muted)';
-
-      item.appendChild(left);
-      item.appendChild(right);
-      section.appendChild(item);
+  // Try batch presence
+  try {
+    const res = await safeFetch(`https://presence.roblox.com/v1/presence/users`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ userIds })
     });
 
-    memberListEl.appendChild(section);
-  });
+    if (Array.isArray(res)) {
+      res.forEach(p => {
+        const uid = p.userId || p.UserId;
+        const isOnline = p.isOnline ?? (p.UserPresenceType !== 0);
+        presenceMap[uid] = !!isOnline;
+      });
+    }
+  } catch {}
 
-  setStatus('Loaded members. Note: not all members may be listed (we fetch up to 200).');
+  // Fallback legacy presence (slow)
+  if (Object.keys(presenceMap).length === 0) {
+    for (const id of userIds) {
+      const p = await safeFetch(`https://api.roblox.com/Users/${id}/Onlinestatus/`);
+      if (p) presenceMap[id] = !!p.IsOnline;
+    }
+  }
 
+  // Count online users
+  const onlineCount = Object.values(presenceMap).filter(Boolean).length;
+  onlineCountEl.textContent = onlineCount.toLocaleString();
+
+  // Render member list ONLY on first load
+  if (firstLoad) {
+    const groups = {};
+    members.forEach(m => {
+      const roleName = roleMap[m.roleId]?.name || "Member";
+      if (!groups[roleName]) groups[roleName] = [];
+      groups[roleName].push({
+        ...m,
+        online: presenceMap[m.id] || false
+      });
+    });
+
+    const orderedRoles = roles.sort((a, b) => a.rank - b.rank).map(r => r.name);
+
+    memberListEl.innerHTML = "";
+    orderedRoles.forEach(role => {
+      if (!groups[role]) return;
+
+      const title = document.createElement("div");
+      title.textContent = `${role} (${groups[role].length})`;
+      title.style.cssText = "font-weight:700;margin-bottom:6px;color:#fff;";
+      memberListEl.appendChild(title);
+
+      groups[role].forEach(u => {
+        const div = document.createElement("div");
+        div.className = "member-item";
+        div.style.cssText = `
+          display:flex;justify-content:space-between;margin-bottom:4px;
+        `;
+        div.innerHTML = `
+          <span>${u.name}</span>
+          <span style="font-size:13px;font-weight:700;color:${u.online ? '#73bef8' : 'var(--muted)'}">
+            ${u.online ? 'Online' : 'Offline'}
+          </span>
+        `;
+        memberListEl.appendChild(div);
+      });
+    });
+  }
+
+  setStatus("Updated.");
 })();
-</script>
 
-<style>
-/* small page-specific tweaks so the member list shows nicely */
-.page-home h1{ margin:0 0 8px 0; color:#fff; }
-.page-home h2{ margin:0 0 10px 0; color:#fff; }
-.card-box h2, .card-box h1{ margin:0 0 10px 0; }
-.member-item { transition: transform .08s ease; }
-.member-item:hover { transform: translateY(-3px); }
-</style>
+// AUTO-REFRESH every 30 seconds
+setInterval(() => loadGroup(false), 30000);
+</script>
